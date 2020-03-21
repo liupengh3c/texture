@@ -1,0 +1,8 @@
+﻿  texture.cpp
+texture.obj : error LNK2019: 无法解析的外部符号 _glfwInit，该符号在函数 _main 中被引用
+texture.obj : error LNK2019: 无法解析的外部符号 _glfwWindowHint，该符号在函数 _main 中被引用
+D:\render\lib\glew32s.lib : warning LNK4272: 库计算机类型“x64”与目标计算机类型“x86”冲突
+D:\render\lib\glew32.lib : warning LNK4272: 库计算机类型“x64”与目标计算机类型“x86”冲突
+D:\render\lib\glfw3.lib : warning LNK4272: 库计算机类型“x64”与目标计算机类型“x86”冲突
+D:\render\lib\glfw3dll.lib : warning LNK4272: 库计算机类型“x64”与目标计算机类型“x86”冲突
+D:\render\texture\Debug\texture.exe : fatal error LNK1120: 2 个无法解析的外部命令
