@@ -40,11 +40,12 @@ int main()
     // Shader,顶点着色器
     const GLchar* vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 position;\n"
+        "layout (location = 1) in vec3 color;\n"
         "out vec4 vertexColor;\n"
         "void main()\n"
         "{\n"
         "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-        "vertexColor = vec4(1.0f,0.0f,0.0f,1.0f);\n"
+        "vertexColor = vec4(color,1.0f);\n"
         "}\0";
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -101,21 +102,21 @@ int main()
     glDeleteShader(fragment2Shader);
 
     // 渲染一个矩形
-    //GLfloat vertices[] = {
-    //    // 位置                // 颜色              // 纹理坐标
-    //     -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Bottom Left
-    //     -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top middle
-    //      0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Top Left 
-    //      0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-    //      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f,
-    //};
-    GLfloat vertices[] = {         
-         -1.0f,  0.0f,  0.0f,   // Bottom Left
-         -0.5f,  1.0f,  0.0f,   // top middle
-          0.0f,  0.0f,  0.0f,   // Top Left 
-          0.5f, -1.0f,  0.0f,  
-          1.0f,  0.0f,  0.0f
+    GLfloat vertices[] = {
+        // 位置                // 颜色              // 纹理坐标
+         -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Bottom Left
+         -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top middle
+          0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Top Left 
+          0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+          1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f,
     };
+    //GLfloat vertices[] = {         
+    //     -1.0f,  0.0f,  0.0f,   // Bottom Left
+    //     -0.5f,  1.0f,  0.0f,   // top middle
+    //      0.0f,  0.0f,  0.0f,   // Top Left 
+    //      0.5f, -1.0f,  0.0f,  
+    //      1.0f,  0.0f,  0.0f
+    //};
     GLuint firstIndices[] = {  // Note that we start from 0!
         0, 1, 2, // First Triangle
     };
@@ -138,8 +139,11 @@ int main()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(firstIndices), firstIndices, GL_STATIC_DRAW);
 
     // 设置顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
 
     glBindVertexArray(0); // Unbind VAO
@@ -153,7 +157,7 @@ int main()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(secondIndices), secondIndices, GL_STATIC_DRAW);
 
     // 设置顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0); // Unbind VAO
