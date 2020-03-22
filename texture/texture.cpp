@@ -41,11 +41,15 @@ int main()
     const GLchar* vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 position;\n"
         "layout (location = 1) in vec3 color;\n"
+        "layout (location = 2) in vec2 texCoord;\n"
+
         "out vec4 vertexColor;\n"
+        "out vec2 TexCoord;\n"
         "void main()\n"
         "{\n"
         "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
         "vertexColor = vec4(color,1.0f);\n"
+        "TexCoord = texCoord;\n"
         "}\0";
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -63,9 +67,11 @@ int main()
     const GLchar* fragmentShader1Source = "#version 330 core\n"
         "out vec4 color;\n"
         "in vec4 vertexColor;\n"
+        "in vec2 TexCoord;\n"
+        "uniform sampler2D ourTexture;\n"
         "void main()\n"
         "{\n"
-        "color = vertexColor;\n"
+        "color = texture(ourTexture, TexCoord) * vertexColor;\n"
         "}\n\0";
 
     GLuint fragment1Shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -145,6 +151,8 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0); // Unbind VAO
 
@@ -162,6 +170,24 @@ int main()
 
     glBindVertexArray(0); // Unbind VAO
 
+    // 加载纹理
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int textureWidth, textureHeight;
+    unsigned char* image = SOIL_load_image("D:\\render\\texture\\texture\\texture\\container.jpg", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    cout << "texture width=" << textureWidth << endl;
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -171,6 +197,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 第一个三角形
+        glBindTexture(GL_TEXTURE_2D, texture);
         glUseProgram(shader1Program);
         glBindVertexArray(VAO[0]);
        
