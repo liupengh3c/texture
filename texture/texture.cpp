@@ -182,7 +182,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int textureWidth, textureHeight;
-    unsigned char* image = SOIL_load_image("D:\\render\\texture\\texture\\texture\\container.jpg", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    unsigned char* image = SOIL_load_image("texture\\container.jpg", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     cout << "texture width=" << textureWidth << endl;
