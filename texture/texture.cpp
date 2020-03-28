@@ -47,9 +47,9 @@ int main()
         "out vec2 TexCoord;\n"
         "void main()\n"
         "{\n"
-        "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
+        "gl_Position = vec4(position, 1.0);\n"
         "vertexColor = vec4(color,1.0f);\n"
-        "TexCoord = texCoord;\n"
+        "TexCoord = vec2(texCoord.x, 1 - texCoord.y);\n"
         "}\0";
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -68,10 +68,11 @@ int main()
         "out vec4 color;\n"
         "in vec4 vertexColor;\n"
         "in vec2 TexCoord;\n"
-        "uniform sampler2D ourTexture;\n"
+        "uniform sampler2D ourTexture1;\n"
+        "uniform sampler2D ourTexture2;\n"
         "void main()\n"
         "{\n"
-        "color = texture(ourTexture, TexCoord) * vertexColor;\n"
+        "color = mix(texture(ourTexture1, TexCoord),texture(ourTexture2, TexCoord),0.2);\n"
         "}\n\0";
 
     GLuint fragment1Shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -110,8 +111,10 @@ int main()
     // 渲染一个矩形
     GLfloat vertices[] = {
         // 位置                // 颜色              // 纹理坐标
-         -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Bottom Left
-         -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top middle
+         -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, // Bottom Left
+         -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+          0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+          0.0f,  1.0f,  0.0f,  1.0f, 1.0f, 0.0f,   1.0f, 1.0f, // top middle
           0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Top Left 
           0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f,
           1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f,
@@ -125,10 +128,11 @@ int main()
     //};
     GLuint firstIndices[] = {  // Note that we start from 0!
         0, 1, 2, // First Triangle
+        1, 2, 3,
     };
 
     GLuint secondIndices[] = {  // Note that we start from 0!
-        2, 3, 4, // First Triangle
+        4, 5, 6, // First Triangle
     };
 
     GLuint VBO[2], VAO[2], EBO[2];
@@ -170,7 +174,7 @@ int main()
 
     glBindVertexArray(0); // Unbind VAO
 
-    // 加载纹理
+    // 第一个纹理
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -189,6 +193,23 @@ int main()
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    // 第二个纹理
+    GLuint texture2;
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    image = SOIL_load_image("texture\\awesomeface.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     while (!glfwWindowShouldClose(window))
     {
         // Render
@@ -197,17 +218,25 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 第一个三角形
-        glBindTexture(GL_TEXTURE_2D, texture);
         glUseProgram(shader1Program);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glUniform1i(glGetUniformLocation(shader1Program, "ourTexture1"), 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        glUniform1i(glGetUniformLocation(shader1Program, "ourTexture2"), 1);
+
         glBindVertexArray(VAO[0]);
        
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
 
         // 第二个三角形 
         GLfloat timeValue = glfwGetTime();
         GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
+        cout << "green value=" << greenValue << "time value=" << timeValue << endl;
         GLint vertexColorLocation = glGetUniformLocation(shader2Program, "ourColor");
         glUseProgram(shader2Program);
         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
