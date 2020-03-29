@@ -12,6 +12,7 @@ using namespace std;
 int main()
 {
     cout << "Hello World!\n";
+    float score = 0.2f;
     int width, height;
     glfwInit();
 
@@ -70,9 +71,10 @@ int main()
         "in vec2 TexCoord;\n"
         "uniform sampler2D ourTexture1;\n"
         "uniform sampler2D ourTexture2;\n"
+        "uniform float score;\n"
         "void main()\n"
         "{\n"
-        "color = mix(texture(ourTexture1, TexCoord),texture(ourTexture2, TexCoord),0.2);\n"
+        "color = mix(texture(ourTexture1, TexCoord),texture(ourTexture2, vec2(1 - TexCoord.x,TexCoord.y)),score);\n"
         "}\n\0";
 
     GLuint fragment1Shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -111,13 +113,14 @@ int main()
     // 渲染一个矩形
     GLfloat vertices[] = {
         // 位置                // 颜色              // 纹理坐标
-         -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, // Bottom Left
-         -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
-          0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
-          0.0f,  1.0f,  0.0f,  1.0f, 1.0f, 0.0f,   1.0f, 1.0f, // top middle
-          0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Top Left 
-          0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-          1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+         -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, // 左下
+         -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f, // 左上
+          0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 0.0f, // 右下
+          0.0f,  1.0f,  0.0f,  1.0f, 1.0f, 0.0f,   1.0f, 1.0f, // 右上
+
+          0.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 左上 
+          0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f, // 中
+          1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f, // 右上
     };
     //GLfloat vertices[] = {         
     //     -1.0f,  0.0f,  0.0f,   // Bottom Left
@@ -179,8 +182,8 @@ int main()
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -222,6 +225,9 @@ int main()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glUniform1i(glGetUniformLocation(shader1Program, "ourTexture1"), 0);
+
+        GLint loc = glGetUniformLocation(shader1Program, "score");
+        glUniform1f(loc, 0.2f);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
